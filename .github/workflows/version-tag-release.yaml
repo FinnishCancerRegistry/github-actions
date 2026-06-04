@@ -38,12 +38,13 @@ jobs:
       - name: Build source package
         shell: pwsh
         run: |
-          Rscript -e "pkgbuild::build(path = '.')"
+          New-Item -ItemType Directory -Force ../dist
+          Rscript -e "pkgbuild::build(path = '.', dest_path = '../dist/')"
 
       - name: Build Windows binary
         shell: pwsh
         run: |
-          Rscript -e "pkgbuild::build(binary = TRUE, path = '.')"
+          Rscript -e "pkgbuild::build(binary = TRUE, path = '.', dest_path = '../dist/')"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -51,7 +52,7 @@ jobs:
           tag_name: ${{ inputs.tag }}
           name: Release ${{ inputs.tag }}
           files: |
-            *.zip
-            *.tar.gz
+            ../dist/*.zip
+            ../dist/*.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
