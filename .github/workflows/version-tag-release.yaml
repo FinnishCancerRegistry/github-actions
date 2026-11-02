@@ -46,11 +46,26 @@ jobs:
         run: |
           Rscript -e "pkgbuild::build(binary = TRUE, path = '.', dest_path = '../dist/')"
 
+      # Record the R version used to build the binary so it can be shown in
+      # the release description.
+      - name: Get R version
+        id: r-version
+        shell: pwsh
+        run: |
+          $rVersion = Rscript -e "cat(as.character(getRversion()))"
+          $rPlatform = Rscript -e "cat(R.version[['platform']])"
+          Write-Host "R version: $rVersion ($rPlatform)"
+          "version=$rVersion" >> $env:GITHUB_OUTPUT
+          "platform=$rPlatform" >> $env:GITHUB_OUTPUT
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.tag }}
           name: Release ${{ inputs.tag }}
+          body: |
+            Windows binary (.zip) built with R ${{ steps.r-version.outputs.version }} (${{ steps.r-version.outputs.platform }}).
+          append_body: true
           files: |
             ../dist/*.zip
             ../dist/*.tar.gz
